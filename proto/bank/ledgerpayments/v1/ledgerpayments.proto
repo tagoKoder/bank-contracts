@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package bank.ledgerpayments.v1;
+
+option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/ledgerpayments/v1;ledgerpaymentsv1";
+
+
+import "google/protobuf/timestamp.proto";
+
+
+service PaymentsService {
+  rpc PostPayment(PostPaymentRequest) returns (PostPaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+}
+
+service LedgerService {
+  rpc CreditAccount(CreditAccountRequest) returns (CreditAccountResponse);
+  rpc ListAccountJournalEntries(ListAccountJournalEntriesRequest) returns (ListAccountJournalEntriesResponse);
+
+  // interno/admin
+  rpc CreateManualJournalEntry(CreateManualJournalEntryRequest) returns (CreateManualJournalEntryResponse);
+}
+
+message PostPaymentRequest {
+  string idempotency_key = 1;
+  string source_account_id = 2;      // UUID
+  string destination_account_id = 3; // UUID (destination_kind=internal)
+  string currency = 4;               // "USD"
+  string amount = 5;                 // decimal como string para evitar float (20,6)
+  string initiated_by = 6;           // subject/actor
+}
+
+message PostPaymentResponse {
+  string payment_id = 1;             // UUID
+  string status = 2;                 // posted|processing|failed
+}
+
+message GetPaymentRequest {
+  string payment_id = 1; // UUID
+}
+
+message PaymentStep {
+  string step = 1; // VALIDATE|RESERVE|JOURNAL|OUTBOX|COMPENSATE
+  string state = 2; // ok|failed|skipped
+  string details_json = 3;
+  google.protobuf.Timestamp attempted_at = 4;
+}
+
+message GetPaymentResponse {
+  string payment_id = 1;
+  string status = 2;
+  string idempotency_key = 3;
+  string source_account_id = 4;
+  string destination_account_id = 5;
+  string currency = 6;
+  string amount = 7;
+  repeated PaymentStep steps = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message CreditAccountRequest {
+  string idempotency_key = 1;
+  string account_id = 2;  // UUID
+  string currency = 3;
+  string amount = 4;      // decimal string
+  string initiated_by = 5;
+  string external_ref = 6; // opcional
+}
+
+message CreditAccountResponse {
+  string journal_id = 1;   // UUID
+  string status = 2;       // posted
+}
+
+message ListAccountJournalEntriesRequest {
+  string account_id = 1; // UUID
+  google.protobuf.Timestamp from = 2;
+  google.protobuf.Timestamp to = 3;
+  int32 page = 4;
+  int32 size = 5;
+}
+
+message JournalLine {
+  string gl_account_code = 1;
+  string counterparty_ref = 2;
+  string debit = 3;   // decimal string
+  string credit = 4;  // decimal string
+}
+
+message JournalEntryView {
+  string journal_id = 1; // UUID
+  string currency = 2;
+  string status = 3;
+  google.protobuf.Timestamp booked_at = 4;
+  string external_ref = 5;
+  repeated JournalLine lines = 6;
+}
+
+message ListAccountJournalEntriesResponse {
+  repeated JournalEntryView entries = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message CreateManualJournalEntryRequest {
+  string external_ref = 1;
+  string currency = 2;
+  google.protobuf.Timestamp booked_at = 3;
+  string created_by = 4;
+  repeated JournalLine lines = 5;
+}
+
+message CreateManualJournalEntryResponse {
+  string journal_id = 1;
+  string status = 2; // posted
+}

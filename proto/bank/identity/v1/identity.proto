@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package bank.identity.v1;
+
+//option go_package = "github.com/your-org/your-repo/genproto/bank/identity/v1;identityv1";
+//option java_multiple_files = true;
+//option java_package = "com.bank.identity.v1";
+option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/identity/v1;identityv1";
+import "google/protobuf/timestamp.proto";
+
+
+// =========================================================
+// Services
+// =========================================================
+
+service OnboardingService {
+  // POST /identity/onboarding/registrations
+  rpc StartRegistration(StartRegistrationRequest) returns (StartRegistrationResponse);
+}
+
+service OidcAuthService {
+  // POST /identity/oidc/login
+  rpc StartOidcLogin(StartOidcLoginRequest) returns (StartOidcLoginResponse);
+
+  // POST /identity/oidc/token
+  rpc CompleteOidcLogin(CompleteOidcLoginRequest) returns (CompleteOidcLoginResponse);
+}
+
+// =========================================================
+// Enums
+// =========================================================
+
+enum OccupationType {
+  OCCUPATION_TYPE_UNSPECIFIED = 0;
+  OCCUPATION_TYPE_STUDENT = 1;
+  OCCUPATION_TYPE_EMPLOYEE = 2;
+  OCCUPATION_TYPE_SELF_EMPLOYED = 3;
+  OCCUPATION_TYPE_UNEMPLOYED = 4;
+  OCCUPATION_TYPE_RETIRED = 5;
+}
+
+// =========================================================
+// Messages
+// =========================================================
+
+// StartRegistrationRequest
+// Datos KYC iniciales para crear intención de registro.
+message StartRegistrationRequest {
+  // OpenAPI: channel (example: web)
+  string channel = 1;
+
+  // Número de cédula.
+  string national_id = 2;
+
+  // OpenAPI: format date (YYYY-MM-DD). Se deja como string para no depender de google.type.Date.
+  // Fecha de expedición de la cédula.
+  string national_id_issue_date = 3;
+
+  // Código dactilar.
+  string fingerprint_code = 4;
+
+  // Imagen de cédula (frontal) en base64.
+  string id_document_front_base64 = 5;
+
+  // Selfie del usuario en base64.
+  string selfie_base64 = 6;
+
+  double monthly_income = 7;
+
+  OccupationType occupation_type = 8;
+
+  string email = 9; // format: email
+  string phone = 10;
+}
+
+// StartRegistrationResponse
+message StartRegistrationResponse {
+  string registration_id = 1; // uuid
+  string state = 2;           // example: started
+  google.protobuf.Timestamp created_at = 3; // date-time
+}
+
+// StartOidcLoginRequest
+message StartOidcLoginRequest {
+  string channel = 1;              // example: web
+  string redirect_after_login = 2; // example: /home
+}
+
+// StartOidcLoginResponse
+message StartOidcLoginResponse {
+  string authorization_url = 1; // uri
+  string state = 2;
+}
+
+// CompleteOidcLoginRequest
+message CompleteOidcLoginRequest {
+  string code = 1;
+  string state = 2;
+  string ip = 3;         // format: ipv4 (se valida a nivel app)
+  string user_agent = 4;
+  string channel = 5;    // example: web
+}
+
+// CompleteOidcLoginResponse
+message CompleteOidcLoginResponse {
+  string identity_id = 1;     // uuid
+  string subject_id_oidc = 2;
+  string provider = 3;        // example: authentik
+  OidcUser user = 4;
+  OidcTokens tokens = 5;
+  string redirect_after_login = 6;
+}
+
+// OidcUser
+message OidcUser {
+  string name = 1;
+  string email = 2; // format: email
+  repeated string roles = 3;
+}
+
+// OidcTokens
+message OidcTokens {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+}
