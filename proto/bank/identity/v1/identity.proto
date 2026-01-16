@@ -6,6 +6,10 @@ package bank.identity.v1;
 //option java_multiple_files = true;
 //option java_package = "com.bank.identity.v1";
 option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_package = "bank.identity.v1";
+option java_outer_classname = "IdentityProto";
+
 import "google/protobuf/timestamp.proto";
 
 
@@ -14,17 +18,33 @@ import "google/protobuf/timestamp.proto";
 // =========================================================
 
 service OnboardingService {
-  // POST /identity/onboarding/registrations
+  // Start user registration (KYC)
   rpc StartRegistration(StartRegistrationRequest) returns (StartRegistrationResponse);
 }
 
 service OidcAuthService {
-  // POST /identity/oidc/login
+  // Start OIDC login (BFF)
   rpc StartOidcLogin(StartOidcLoginRequest) returns (StartOidcLoginResponse);
 
-  // POST /identity/oidc/token
+  // Complete OIDC login (BFF)
   rpc CompleteOidcLogin(CompleteOidcLoginRequest) returns (CompleteOidcLoginResponse);
+  // Sesión server-side (banca)
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc LogoutSession(LogoutSessionRequest) returns (LogoutSessionResponse);
+
+  rpc GetSessionInfo(GetSessionInfoRequest) returns (GetSessionInfoResponse);
+
+
 }
+
+service WebauthnService {
+  rpc BeginWebauthnRegistration(BeginWebauthnRegistrationRequest) returns (BeginWebauthnRegistrationResponse);
+  rpc FinishWebauthnRegistration(FinishWebauthnRegistrationRequest) returns (FinishWebauthnRegistrationResponse);
+
+  rpc BeginWebauthnAssertion(BeginWebauthnAssertionRequest) returns (BeginWebauthnAssertionResponse);
+  rpc FinishWebauthnAssertion(FinishWebauthnAssertionRequest) returns (FinishWebauthnAssertionResponse);
+}
+
 
 // =========================================================
 // Enums
@@ -59,11 +79,11 @@ message StartRegistrationRequest {
   // Código dactilar.
   string fingerprint_code = 4;
 
-  // Imagen de cédula (frontal) en base64.
-  string id_document_front_base64 = 5;
+  // Documento de identidad (cédula o pasaporte) en bytes.
+  bytes id_document_front = 5;
 
-  // Selfie del usuario en base64.
-  string selfie_base64 = 6;
+  // Selfie del usuario en bytes.
+    bytes selfie = 6;
 
   double monthly_income = 7;
 
@@ -105,10 +125,11 @@ message CompleteOidcLoginRequest {
 message CompleteOidcLoginResponse {
   string identity_id = 1;     // uuid
   string subject_id_oidc = 2;
-  string provider = 3;        // example: authentik
+  string provider = 3;        // example: cognito
   OidcUser user = 4;
-  OidcTokens tokens = 5;
-  string redirect_after_login = 6;
+  string session_id = 5;          // uuid
+  int64 session_expires_in = 6;   // seconds
+  string redirect_after_login = 7;
 }
 
 // OidcUser
@@ -123,4 +144,83 @@ message OidcTokens {
   string access_token = 1;
   string refresh_token = 2;
   int64 expires_in = 3;
+}
+
+
+message RefreshSessionRequest {
+  string session_id = 1; // uuid
+  string ip = 2;
+  string user_agent = 3;
+}
+
+message RefreshSessionResponse {
+  string session_id = 1;        // uuid (rotado)
+  int64 session_expires_in = 2; // seconds
+  string access_token = 3;
+  int64 access_token_expires_in = 4;
+}
+
+message LogoutSessionRequest {
+  string session_id = 1; // uuid
+}
+
+message LogoutSessionResponse {
+  bool success = 1;
+}
+
+message GetSessionInfoRequest {
+  string session_id = 1; // uuid
+  string ip = 2;
+  string user_agent = 3;
+}
+
+message GetSessionInfoResponse {
+  string identity_id = 1;      // uuid
+  string subject_id_oidc = 2;
+  string provider = 3;  // example: cognito
+  OidcUser user = 4;           // roles aquí
+  string customer_id = 5;      // opcional si ya lo sabes en identity o lo enlazas
+  string user_status = 6;      // ACTIVE|LOCKED|DISABLED
+  int64 session_expires_in = 7;
+}
+
+// =========================================================
+// New messages for Webauthn
+message BeginWebauthnRegistrationRequest {
+  string identity_id = 1;  // uuid
+  string device_name = 2;  // opcional
+}
+
+message BeginWebauthnRegistrationResponse {
+  string request_id = 1;
+  string options_json = 2; // JSON para navigator.credentials.create()
+}
+
+message FinishWebauthnRegistrationRequest {
+  string request_id = 1;
+  string credential_json = 2; // JSON del resultado de navigator.credentials.create()
+}
+
+message FinishWebauthnRegistrationResponse {
+  bool success = 1;
+}
+
+message BeginWebauthnAssertionRequest {
+  string identity_id = 1; // uuid
+  string session_id = 2;  // uuid (sesión creada en OIDC)
+}
+
+message BeginWebauthnAssertionResponse {
+  string request_id = 1;
+  string options_json = 2; // JSON para navigator.credentials.get()
+}
+
+message FinishWebauthnAssertionRequest {
+  string session_id = 1;     // uuid
+  string request_id = 2;
+  string credential_json = 3; // JSON del resultado de navigator.credentials.get()
+}
+
+message FinishWebauthnAssertionResponse {
+  bool success = 1;
 }
