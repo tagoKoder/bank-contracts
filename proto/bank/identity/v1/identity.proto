@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package bank.identity.v1;
 
-//option go_package = "github.com/your-org/your-repo/genproto/bank/identity/v1;identityv1";
-//option java_multiple_files = true;
-//option java_package = "com.bank.identity.v1";
 option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/identity/v1;identityv1";
 option java_multiple_files = true;
 option java_package = "bank.identity.v1";
@@ -12,14 +9,16 @@ option java_outer_classname = "IdentityProto";
 
 import "google/protobuf/timestamp.proto";
 
-
 // =========================================================
-// Services
+// Services (v1)
 // =========================================================
 
 service OnboardingService {
-  // Start user registration (KYC)
+  // Start user registration (KYC) — v1 presigned flow
   rpc StartRegistration(StartRegistrationRequest) returns (StartRegistrationResponse);
+
+  // Confirm uploaded KYC objects — v1
+  rpc ConfirmRegistrationKyc(ConfirmRegistrationKycRequest) returns (ConfirmRegistrationKycResponse);
 }
 
 service OidcAuthService {
@@ -28,23 +27,12 @@ service OidcAuthService {
 
   // Complete OIDC login (BFF)
   rpc CompleteOidcLogin(CompleteOidcLoginRequest) returns (CompleteOidcLoginResponse);
-  // Sesión server-side (banca)
+
+  // Session server-side (banking)
   rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
   rpc LogoutSession(LogoutSessionRequest) returns (LogoutSessionResponse);
-
   rpc GetSessionInfo(GetSessionInfoRequest) returns (GetSessionInfoResponse);
-
-
 }
-
-service WebauthnService {
-  rpc BeginWebauthnRegistration(BeginWebauthnRegistrationRequest) returns (BeginWebauthnRegistrationResponse);
-  rpc FinishWebauthnRegistration(FinishWebauthnRegistrationRequest) returns (FinishWebauthnRegistrationResponse);
-
-  rpc BeginWebauthnAssertion(BeginWebauthnAssertionRequest) returns (BeginWebauthnAssertionResponse);
-  rpc FinishWebauthnAssertion(FinishWebauthnAssertionRequest) returns (FinishWebauthnAssertionResponse);
-}
-
 
 // =========================================================
 // Enums
@@ -59,93 +47,175 @@ enum OccupationType {
   OCCUPATION_TYPE_RETIRED = 5;
 }
 
+enum KycDocType {
+  KYC_DOC_TYPE_UNSPECIFIED = 0;
+  KYC_DOC_TYPE_ID_FRONT = 1;
+  KYC_DOC_TYPE_SELFIE = 2;
+}
+
+enum KycUploadStatus {
+  KYC_UPLOAD_STATUS_UNSPECIFIED = 0;
+  KYC_UPLOAD_STATUS_PENDING = 1;
+  KYC_UPLOAD_STATUS_CONFIRMED = 2;
+}
+
+enum RegistrationState {
+  REGISTRATION_STATE_UNSPECIFIED = 0;
+  REGISTRATION_STATE_STARTED = 1;
+  REGISTRATION_STATE_CONTACT_VERIFIED = 2;
+  REGISTRATION_STATE_CONSENTED = 3;
+  REGISTRATION_STATE_ACTIVATED = 4;
+  REGISTRATION_STATE_REJECTED = 5;
+}
+
 // =========================================================
-// Messages
+// Messages (Onboarding v1 — presigned S3)
 // =========================================================
 
-// StartRegistrationRequest
-// Datos KYC iniciales para crear intención de registro.
+// StartRegistrationV1Request
+// Creates a registration intent and returns presigned upload URLs (no bytes in request).
 message StartRegistrationRequest {
-  // OpenAPI: channel (example: web)
-  string channel = 1;
+  string channel = 1; // example: web
 
-  // Número de cédula.
+  // KYC fields (NO PII beyond what's required; avoid logging them)
   string national_id = 2;
-
-  // OpenAPI: format date (YYYY-MM-DD). Se deja como string para no depender de google.type.Date.
-  // Fecha de expedición de la cédula.
-  string national_id_issue_date = 3;
-
-  // Código dactilar.
+  string national_id_issue_date = 3; // YYYY-MM-DD
   string fingerprint_code = 4;
 
-  // Documento de identidad (cédula o pasaporte) en bytes.
-  bytes id_document_front = 5;
+  double monthly_income = 5;
+  OccupationType occupation_type = 6;
 
-  // Selfie del usuario en bytes.
-    bytes selfie = 6;
+  string email = 7; // format: email
+  string phone = 8;
 
-  double monthly_income = 7;
-
-  OccupationType occupation_type = 8;
-
-  string email = 9; // format: email
-  string phone = 10;
+  // Optional client hints for upload constraints (server enforces)
+  string id_front_content_type = 9;   // e.g. image/jpeg, application/pdf
+  string selfie_content_type = 10;    // e.g. image/jpeg, image/png
 }
 
-// StartRegistrationResponse
+// StartRegistrationV1Response
 message StartRegistrationResponse {
   string registration_id = 1; // uuid
-  string state = 2;           // example: started
-  google.protobuf.Timestamp created_at = 3; // date-time
+  RegistrationState state = 2;
+  google.protobuf.Timestamp created_at = 3;
+
+  // Presigned uploads
+  repeated PresignedUpload uploads = 4;
+
+  // Convenience: correlation id can be returned by BFF/micro as header; keep here optional.
+  string correlation_id = 5;
 }
 
-// StartOidcLoginRequest
+message PresignedUpload {
+  KycDocType doc_type = 1;
+
+  // S3 target reference (client MUST NOT treat as public)
+  string bucket = 2;
+  string key = 3;
+
+  // PUT URL
+  string upload_url = 4;
+
+  // Required headers to use with the PUT (client must send exactly these)
+  repeated Header headers = 5;
+
+  // Upload constraints
+  int64 max_bytes = 6;
+  string content_type = 7;
+  int64 expires_in_seconds = 8;
+}
+
+message Header {
+  string name = 1;
+  string value = 2;
+}
+
+// ConfirmRegistrationKycV1Request
+// Confirms that client uploaded the objects. Server validates using S3 HeadObject and/or ETag match.
+message ConfirmRegistrationKycRequest {
+  string registration_id = 1; // uuid
+
+  repeated UploadedObject objects = 2;
+
+  // Optional: channel and client context (do not include raw IP/UA; handled via interceptor if needed)
+  string channel = 3;
+}
+
+message UploadedObject {
+  KycDocType doc_type = 1;
+
+  string bucket = 2;
+  string key = 3;
+
+  // Optional but recommended: ETag received from S3 upload response.
+  // Server can validate ETag via HeadObject.eTag().
+  string etag = 4;
+
+  // Size/content-type can be server-validated via HeadObject; include only if you want extra checks.
+  int64 size_bytes = 5;
+  string content_type = 6;
+}
+
+message ConfirmRegistrationKycResponse {
+  string registration_id = 1;
+  RegistrationState state = 2;
+
+  // Status per doc type
+  repeated KycObjectStatus statuses = 3;
+
+  google.protobuf.Timestamp confirmed_at = 4;
+
+  string correlation_id = 5;
+}
+
+message KycObjectStatus {
+  KycDocType doc_type = 1;
+  KycUploadStatus status = 2;
+
+  // Echo back what the server accepted
+  string bucket = 3;
+  string key = 4;
+  string etag = 5;
+}
+
+// =========================================================
+// Messages (OIDC auth/session — same semantics, bumped package)
+// =========================================================
+
 message StartOidcLoginRequest {
   string channel = 1;              // example: web
-  string redirect_after_login = 2; // example: /home
+  string redirect_after_login = 2; // example: /app
 }
 
-// StartOidcLoginResponse
 message StartOidcLoginResponse {
   string authorization_url = 1; // uri
   string state = 2;
 }
 
-// CompleteOidcLoginRequest
 message CompleteOidcLoginRequest {
   string code = 1;
   string state = 2;
-  string ip = 3;         // format: ipv4 (se valida a nivel app)
-  string user_agent = 4;
+  string ip = 3;         // prefer: pass hashed via context; kept for now if you already use it
+  string user_agent = 4; // prefer: hashed via context; kept for now if you already use it
   string channel = 5;    // example: web
 }
 
-// CompleteOidcLoginResponse
 message CompleteOidcLoginResponse {
   string identity_id = 1;     // uuid
   string subject_id_oidc = 2;
   string provider = 3;        // example: cognito
   OidcUser user = 4;
+
   string session_id = 5;          // uuid
   int64 session_expires_in = 6;   // seconds
   string redirect_after_login = 7;
 }
 
-// OidcUser
 message OidcUser {
   string name = 1;
   string email = 2; // format: email
   repeated string roles = 3;
 }
-
-// OidcTokens
-message OidcTokens {
-  string access_token = 1;
-  string refresh_token = 2;
-  int64 expires_in = 3;
-}
-
 
 message RefreshSessionRequest {
   string session_id = 1; // uuid
@@ -154,8 +224,10 @@ message RefreshSessionRequest {
 }
 
 message RefreshSessionResponse {
-  string session_id = 1;        // uuid (rotado)
+  string session_id = 1;        // uuid (rotated)
   int64 session_expires_in = 2; // seconds
+
+  // Returned to BFF to call downstream micros.
   string access_token = 3;
   int64 access_token_expires_in = 4;
 }
@@ -177,50 +249,9 @@ message GetSessionInfoRequest {
 message GetSessionInfoResponse {
   string identity_id = 1;      // uuid
   string subject_id_oidc = 2;
-  string provider = 3;  // example: cognito
-  OidcUser user = 4;           // roles aquí
-  string customer_id = 5;      // opcional si ya lo sabes en identity o lo enlazas
+  string provider = 3;         // example: cognito
+  OidcUser user = 4;           // roles here
+  string customer_id = 5;      // optional if linked
   string user_status = 6;      // ACTIVE|LOCKED|DISABLED
   int64 session_expires_in = 7;
-}
-
-// =========================================================
-// New messages for Webauthn
-message BeginWebauthnRegistrationRequest {
-  string identity_id = 1;  // uuid
-  string device_name = 2;  // opcional
-}
-
-message BeginWebauthnRegistrationResponse {
-  string request_id = 1;
-  string options_json = 2; // JSON para navigator.credentials.create()
-}
-
-message FinishWebauthnRegistrationRequest {
-  string request_id = 1;
-  string credential_json = 2; // JSON del resultado de navigator.credentials.create()
-}
-
-message FinishWebauthnRegistrationResponse {
-  bool success = 1;
-}
-
-message BeginWebauthnAssertionRequest {
-  string identity_id = 1; // uuid
-  string session_id = 2;  // uuid (sesión creada en OIDC)
-}
-
-message BeginWebauthnAssertionResponse {
-  string request_id = 1;
-  string options_json = 2; // JSON para navigator.credentials.get()
-}
-
-message FinishWebauthnAssertionRequest {
-  string session_id = 1;     // uuid
-  string request_id = 2;
-  string credential_json = 3; // JSON del resultado de navigator.credentials.get()
-}
-
-message FinishWebauthnAssertionResponse {
-  bool success = 1;
 }
