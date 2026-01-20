@@ -19,7 +19,10 @@ service OnboardingService {
 
   // Confirm uploaded KYC objects — v1
   rpc ConfirmRegistrationKyc(ConfirmRegistrationKycRequest) returns (ConfirmRegistrationKycResponse);
+  // NEW: Paso D — Activación (orquesta Accounts + Ledger)
+  rpc ActivateRegistration(ActivateRegistrationRequest) returns (ActivateRegistrationResponse);
 }
+
 
 service OidcAuthService {
   // Start OIDC login (BFF)
@@ -66,6 +69,47 @@ enum RegistrationState {
   REGISTRATION_STATE_CONSENTED = 3;
   REGISTRATION_STATE_ACTIVATED = 4;
   REGISTRATION_STATE_REJECTED = 5;
+}
+
+// =========================================================
+// Messages Activate Registration
+// =========================================================
+
+message ActivateRegistrationRequest {
+  string registration_id = 1; // uuid
+  string channel = 2;         // web|mobile|etc
+
+  // datos mínimos para CreateCustomer en accounts
+  string full_name = 3;
+  string tin = 4;
+  string birth_date = 5;      // YYYY-MM-DD
+  string country = 6;         // ISO-3166-1 alpha-2 (tu OpenAPI manda solo country)
+  string email = 7;
+  string phone = 8;
+
+  // recomendado (aunque tu OpenAPI no lo tenga aún)
+  bool accepted_terms = 9;
+}
+
+message ActivatedAccount {
+  string account_id = 1;
+  string currency = 2;
+  string product_type = 3; // "CHECKING" | "SAVINGS" (string para no acoplar a accounts.proto)
+}
+
+message ActivateRegistrationResponse {
+  string registration_id = 1;
+  RegistrationState state = 2; // REGISTRATION_STATE_ACTIVATED
+
+  // para tu OpenAPI ActivateResponse
+  string customer_id = 3;
+  string primary_account_id = 4; // checking
+  string activation_ref = 5;     // estable e idempotente
+
+  // opcional (útil para debug/demo)
+  repeated ActivatedAccount accounts = 6;
+  string bonus_journal_id = 7;
+  string correlation_id = 8;
 }
 
 // =========================================================
