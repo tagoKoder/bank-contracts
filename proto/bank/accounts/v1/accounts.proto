@@ -245,20 +245,27 @@ message HoldRequest {
 message ReserveHoldRequest {
   string id = 1; // uuid (path param) - account_id
   HoldRequest hold = 2;
+  string hold_id = 3;         // UUID: idealmente payment_id o generated por ledger
+  string idempotency_key = 4; // required para reintentos seguros
 }
 
 message ReleaseHoldRequest {
   string id = 1; // uuid (path param) - account_id
   HoldRequest hold = 2;
+  string hold_id = 3;         // referencia exacta de lo reservado
+  string idempotency_key = 4; // required
 }
 
 message ReserveHoldResponse {
   bool ok = 1;
   double new_hold = 2;
+  string hold_id = 3;
+  google.protobuf.StringValue status = 4; // reserved|duplicate|failed
 }
 
 
 message ReleaseHoldResponse {
   bool ok = 1;
   double new_hold = 2;
+  google.protobuf.StringValue status = 3; // released|duplicate|failed
 }
