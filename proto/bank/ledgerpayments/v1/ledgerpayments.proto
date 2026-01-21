@@ -16,9 +16,6 @@ service PaymentsService {
 service LedgerService {
   rpc CreditAccount(CreditAccountRequest) returns (CreditAccountResponse);
   rpc ListAccountJournalEntries(ListAccountJournalEntriesRequest) returns (ListAccountJournalEntriesResponse);
-
-  // interno/admin
-  rpc CreateManualJournalEntry(CreateManualJournalEntryRequest) returns (CreateManualJournalEntryResponse);
 }
 
 message PostPaymentRequest {
@@ -65,6 +62,8 @@ message CreditAccountRequest {
   string amount = 4;      // decimal string
   string initiated_by = 5;
   string external_ref = 6; // opcional
+  string reason = 7;       // ej: "registration_bonus"
+  string customer_id = 8;  // contrapartida (no PII), ej: customerId
 }
 
 message CreditAccountResponse {
@@ -102,15 +101,3 @@ message ListAccountJournalEntriesResponse {
   int32 size = 3;
 }
 
-message CreateManualJournalEntryRequest {
-  string external_ref = 1;
-  string currency = 2;
-  google.protobuf.Timestamp booked_at = 3;
-  string created_by = 4;
-  repeated JournalLine lines = 5;
-}
-
-message CreateManualJournalEntryResponse {
-  string journal_id = 1;
-  string status = 2; // posted
-}
