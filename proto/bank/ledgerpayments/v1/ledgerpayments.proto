@@ -46,13 +46,12 @@ message PaymentStep {
 message GetPaymentResponse {
   string payment_id = 1;
   string status = 2;
-  string idempotency_key = 3;
-  string source_account_id = 4;
-  string destination_account_id = 5;
-  string currency = 6;
-  string amount = 7;
-  repeated PaymentStep steps = 8;
-  google.protobuf.Timestamp created_at = 9;
+  string source_account_id = 3;
+  string destination_account_id = 4;
+  string currency = 5;
+  string amount = 6;
+  repeated PaymentStep steps = 7;
+  google.protobuf.Timestamp created_at = 8;
 }
 
 message CreditAccountRequest {
