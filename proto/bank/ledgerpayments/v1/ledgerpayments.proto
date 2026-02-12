@@ -16,6 +16,8 @@ service PaymentsService {
 service LedgerService {
   rpc CreditAccount(CreditAccountRequest) returns (CreditAccountResponse);
   rpc ListAccountJournalEntries(ListAccountJournalEntriesRequest) returns (ListAccountJournalEntriesResponse);
+  // NUEVO: Estado de cuenta / Movimientos
+  rpc ListAccountStatement(ListAccountStatementRequest) returns (ListAccountStatementResponse);
 }
 
 message PostPaymentRequest {
@@ -100,3 +102,40 @@ message ListAccountJournalEntriesResponse {
   int32 size = 3;
 }
 
+
+message ListAccountStatementRequest {
+  string account_id = 1;
+  google.protobuf.Timestamp from = 2;
+  google.protobuf.Timestamp to = 3;
+  int32 page = 4;  // 1-based
+  int32 size = 5;
+  bool include_counterparty = 6; // si true, ledger enriquece con micro/account
+}
+
+message CounterpartyView {
+  string account_id = 1;
+  string account_number = 2;
+  string display_name = 3;   // nombre del titular (demo)
+  string account_type = 4;   // savings|checking|...
+}
+
+message StatementItem {
+  string journal_id = 1;
+  google.protobuf.Timestamp booked_at = 2;
+  string currency = 3;
+
+  string direction = 4; // debit|credit
+  string amount = 5;    // decimal string
+
+  string kind = 6;      // transfer|bonus|other
+  string memo = 7;      // external_ref
+
+  string counterparty_account_id = 8; // vacío si "system"
+  CounterpartyView counterparty = 9;  // presente si include_counterparty=true
+}
+
+message ListAccountStatementResponse {
+  repeated StatementItem items = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
