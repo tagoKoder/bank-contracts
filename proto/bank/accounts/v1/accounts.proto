@@ -49,6 +49,9 @@ service InternalAccountsService {
 
   // POST /internal/accounts/{id}/hold/release
   rpc ReleaseHold(ReleaseHoldRequest) returns (ReleaseHoldResponse);
+
+  rpc BatchGetAccountSummaries(BatchGetAccountSummariesRequest) returns (BatchGetAccountSummariesResponse);
+
 }
 
 // =========================================================
@@ -268,4 +271,38 @@ message ReleaseHoldResponse {
   bool ok = 1;
   double new_hold = 2;
   google.protobuf.StringValue status = 3; // released|duplicate|failed
+}
+
+// ----------------------------------------------------
+// Batch account summaries (for ledger enrichment)
+// ----------------------------------------------------
+
+message BatchGetAccountSummariesRequest {
+  // lista de account_id (uuid). Para demo, puedes aceptar 1..200 por request.
+  repeated string account_ids = 1;
+
+  // opcional: si quieres retornar cuentas aunque estén "closed"/"blocked" etc.
+  // Para demo puedes ignorarlo en server y siempre retornar si existe.
+  google.protobuf.BoolValue include_inactive = 2;
+}
+
+message AccountSummary {
+  string account_id = 1;        // uuid
+  string account_number = 2;    // "000123..." (demo)
+  ProductType product_type = 3; // CHECKING|SAVINGS
+  string currency = 4;          // ISO-4217
+  string status = 5;            // active|blocked|closed (string por simplicidad)
+  string display_name = 6;      // nombre del titular (demo)
+}
+
+message MissingAccount {
+  string account_id = 1;
+  google.protobuf.StringValue reason = 2; // not_found|forbidden|inactive|...
+}
+
+message BatchGetAccountSummariesResponse {
+  repeated AccountSummary accounts = 1;
+
+  // Para que ledger pueda saber cuáles no se pudieron resolver sin fallar el call.
+  repeated MissingAccount missing = 2;
 }
