@@ -298,4 +298,6 @@ message GetSessionInfoResponse {
   string customer_id = 5;      // optional if linked
   string user_status = 6;      // ACTIVE|LOCKED|DISABLED
   int64 session_expires_in = 7;
+  string access_token = 8;
+  int64 access_token_expires_in = 9;
 }

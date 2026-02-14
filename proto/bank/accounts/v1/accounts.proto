@@ -37,6 +37,8 @@ service AccountsService {
 
   // PATCH /accounts/{id}/limits
   rpc PatchAccountLimits(PatchAccountLimitsRequest) returns (PatchAccountLimitsResponse);
+
+  rpc GetAccountByNumber(GetAccountByNumberRequest) returns (GetAccountByNumberResponse);
 }
 
 // INTERNAL (para ledger/payments) - proteger con mTLS/API key
@@ -172,6 +174,7 @@ message CreateAccountRequest {
 
 message CreateAccountResponse {
   string account_id = 1; // uuid
+  string account_number = 2;
 }
 
 message ListAccountsRequest {
@@ -185,12 +188,13 @@ message ListAccountsResponse {
 message AccountView {
   string id = 1;          // uuid
   string customer_id = 2; // uuid
-  string product_type = 3; // OpenAPI lo dejaba string; aquí puedes usar enum si quieres versionar (ver nota abajo)
-  string currency = 4;
-  string status = 5;
-  google.protobuf.Timestamp opened_at = 6;
-  google.protobuf.Timestamp updated_at = 7;
-  AccountBalances balances = 8;
+  string account_number = 3; // "000123..." (demo)
+  string product_type = 4; // OpenAPI lo dejaba string; aquí puedes usar enum si quieres versionar (ver nota abajo)
+  string currency = 5;
+  string status = 6;
+  google.protobuf.Timestamp opened_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  AccountBalances balances = 9;
 }
 
 message AccountBalances {
@@ -305,4 +309,30 @@ message BatchGetAccountSummariesResponse {
 
   // Para que ledger pueda saber cuáles no se pudieron resolver sin fallar el call.
   repeated MissingAccount missing = 2;
+}
+
+// ----------------------------------------------------
+// GetAccountByNumber
+// ----------------------------------------------------
+
+message GetAccountByNumberRequest {
+  // puede venir "12345" o "000000012345"
+  string account_number = 1;
+
+  // opcional: si true, permite cuentas frozen (o futuras)
+  google.protobuf.BoolValue include_inactive = 2;
+}
+
+message AccountLookup {
+  string account_id = 1;        // uuid
+  string customer_id = 2;       // uuid
+  string account_number = 3;    // "000000012345"
+  string display_name = 4;      // demo: nombre del titular (NO PII sensible extra)
+  ProductType product_type = 5; // CHECKING|SAVINGS
+  string currency = 6;
+  string status = 7;            // active|frozen (string por simplicidad)
+}
+
+message GetAccountByNumberResponse {
+  AccountLookup account = 1;
 }
