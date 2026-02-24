@@ -37,6 +37,12 @@ service OidcAuthService {
   rpc GetSessionInfo(GetSessionInfoRequest) returns (GetSessionInfoResponse);
 }
 
+service PrincipalService {
+  // Resolver atributos del principal a partir del token del caller (microservice)
+  rpc ResolvePrincipal(ResolvePrincipalRequest) returns (ResolvePrincipalResponse);
+}
+
+
 // =========================================================
 // Enums
 // =========================================================
@@ -300,4 +306,21 @@ message GetSessionInfoResponse {
   int64 session_expires_in = 7;
   string access_token = 8;
   int64 access_token_expires_in = 9;
+}
+
+
+message ResolvePrincipalRequest {
+  // Si true, identity ignora customer_id vacío y devuelve NOT_FOUND
+  bool require_customer_link = 1;
+
+  // Opcional: para debugging controlado (no usar en prod si no lo necesitas)
+  string purpose = 2; // e.g. "accounts:read"
+}
+
+message ResolvePrincipalResponse {
+  string subject_id_oidc = 1;      // sub
+  string principal_id = 2;         // "poolId|sub"
+  string customer_id = 3;          // uuid string (si existe link)
+  repeated string roles = 4;       // cognito:groups o roles internas
+  string user_status = 5;          // ACTIVE|LOCKED|DISABLED (si lo tienes)
 }
