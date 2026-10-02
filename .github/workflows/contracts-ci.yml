@@ -60,10 +60,11 @@ jobs:
       - name: Check protobuf formatting
         run: buf format --diff --exit-code
 
-      # TEMPORARILY DISABLED DURING BOOTSTRAP.
-      #
-      # After the initial contract cleanup is merged to main,
-      # we will enable the breaking-change check here.
+      - name: Check breaking changes
+        if: github.event_name == 'pull_request'
+        run: |
+          git branch -f main origin/main
+          buf breaking --against '.git#branch=main'
 
       - name: Generate Go contracts
         run: buf generate
