@@ -2,16 +2,16 @@ syntax = "proto3";
 
 package bank.accounts.v1;
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
 //option go_package = "github.com/tagokoder/bank-contracts/genproto/bank/accounts/v1;accountsv1";
 //option java_multiple_files = true;
 //option java_package = "com.bank.accounts.v1";
-option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/accounts/v1;accountsv1";
+option go_package = "github.com/tagoKoder/bank-contracts/gen/go/bank/accounts/v1;accountsv1";
 option java_multiple_files = true;
-option java_package = "bank.accounts.v1";
 option java_outer_classname = "AccountsProto";
-
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/wrappers.proto";
+option java_package = "bank.accounts.v1";
 
 // =========================================================
 // Services
@@ -53,7 +53,6 @@ service InternalAccountsService {
   rpc ReleaseHold(ReleaseHoldRequest) returns (ReleaseHoldResponse);
 
   rpc BatchGetAccountSummaries(BatchGetAccountSummariesRequest) returns (BatchGetAccountSummariesResponse);
-
 }
 
 // =========================================================
@@ -101,8 +100,8 @@ message CreateCustomerRequest {
   string phone = 6;
   CustomerAddressCreate address = 7; // opcional
 
-  string idempotency_key = 8;  // recomendado
-  string external_ref = 9;     // ej: registration_id
+  string idempotency_key = 8; // recomendado
+  string external_ref = 9; // ej: registration_id
 }
 
 message CustomerAddressCreate {
@@ -186,7 +185,7 @@ message ListAccountsResponse {
 }
 
 message AccountView {
-  string id = 1;          // uuid
+  string id = 1; // uuid
   string customer_id = 2; // uuid
   string account_number = 3; // "000123..." (demo)
   string product_type = 4; // OpenAPI lo dejaba string; aquí puedes usar enum si quieres versionar (ver nota abajo)
@@ -198,9 +197,9 @@ message AccountView {
 }
 
 message AccountBalances {
-  double ledger = 1;
-  double available = 2;
-  double hold = 3;
+  string ledger = 1;
+  string available = 2;
+  string hold = 3;
 }
 
 message GetAccountBalancesRequest {
@@ -217,14 +216,14 @@ message PatchAccountLimitsRequest {
   string id = 1; // uuid (path param)
 
   // OpenAPI: nullable => wrappers
-  google.protobuf.DoubleValue daily_out = 2;
-  google.protobuf.DoubleValue daily_in = 3;
+  google.protobuf.StringValue daily_out = 2;
+  google.protobuf.StringValue daily_in = 3;
 }
 
 message PatchAccountLimitsResponse {
   string account_id = 1; // uuid
-  double daily_out = 2;
-  double daily_in = 3;
+  string daily_out = 2;
+  string daily_in = 3;
 }
 
 // =========================================================
@@ -232,10 +231,10 @@ message PatchAccountLimitsResponse {
 // =========================================================
 
 message ValidateAccountsAndLimitsRequest {
-  string source_account_id = 1;      // uuid
+  string source_account_id = 1; // uuid
   string destination_account_id = 2; // uuid
-  string currency = 3;              // ISO-4217
-  double amount = 4;
+  string currency = 3; // ISO-4217
+  string amount = 4;
 }
 
 message ValidateAccountsAndLimitsResponse {
@@ -245,35 +244,34 @@ message ValidateAccountsAndLimitsResponse {
 
 message HoldRequest {
   string currency = 1; // ISO-4217
-  double amount = 2;
+  string amount = 2;
   google.protobuf.StringValue reason = 3;
 }
 
 message ReserveHoldRequest {
   string id = 1; // uuid (path param) - account_id
   HoldRequest hold = 2;
-  string hold_id = 3;         // UUID: idealmente payment_id o generated por ledger
+  string hold_id = 3; // UUID: idealmente payment_id o generated por ledger
   string idempotency_key = 4; // required para reintentos seguros
 }
 
 message ReleaseHoldRequest {
   string id = 1; // uuid (path param) - account_id
   HoldRequest hold = 2;
-  string hold_id = 3;         // referencia exacta de lo reservado
+  string hold_id = 3; // referencia exacta de lo reservado
   string idempotency_key = 4; // required
 }
 
 message ReserveHoldResponse {
   bool ok = 1;
-  double new_hold = 2;
+  string new_hold = 2;
   string hold_id = 3;
   google.protobuf.StringValue status = 4; // reserved|duplicate|failed
 }
 
-
 message ReleaseHoldResponse {
   bool ok = 1;
-  double new_hold = 2;
+  string new_hold = 2;
   google.protobuf.StringValue status = 3; // released|duplicate|failed
 }
 
@@ -291,12 +289,12 @@ message BatchGetAccountSummariesRequest {
 }
 
 message AccountSummary {
-  string account_id = 1;        // uuid
-  string account_number = 2;    // "000123..." (demo)
+  string account_id = 1; // uuid
+  string account_number = 2; // "000123..." (demo)
   ProductType product_type = 3; // CHECKING|SAVINGS
-  string currency = 4;          // ISO-4217
-  string status = 5;            // active|blocked|closed (string por simplicidad)
-  string display_name = 6;      // nombre del titular (demo)
+  string currency = 4; // ISO-4217
+  string status = 5; // active|blocked|closed (string por simplicidad)
+  string display_name = 6; // nombre del titular (demo)
 }
 
 message MissingAccount {
@@ -324,13 +322,13 @@ message GetAccountByNumberRequest {
 }
 
 message AccountLookup {
-  string account_id = 1;        // uuid
-  string customer_id = 2;       // uuid
-  string account_number = 3;    // "000000012345"
-  string display_name = 4;      // demo: nombre del titular (NO PII sensible extra)
+  string account_id = 1; // uuid
+  string customer_id = 2; // uuid
+  string account_number = 3; // "000000012345"
+  string display_name = 4; // demo: nombre del titular (NO PII sensible extra)
   ProductType product_type = 5; // CHECKING|SAVINGS
   string currency = 6;
-  string status = 7;            // active|frozen (string por simplicidad)
+  string status = 7; // active|frozen (string por simplicidad)
 }
 
 message GetAccountByNumberResponse {
