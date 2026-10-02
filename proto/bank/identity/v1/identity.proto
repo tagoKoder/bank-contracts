@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package bank.identity.v1;
 
-option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/identity/v1;identityv1";
-option java_multiple_files = true;
-option java_package = "bank.identity.v1";
-option java_outer_classname = "IdentityProto";
-
 import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/tagoKoder/bank-contracts/gen/go/bank/identity/v1;identityv1";
+option java_multiple_files = true;
+option java_outer_classname = "IdentityProto";
+option java_package = "bank.identity.v1";
 
 // =========================================================
 // Services (v1)
@@ -22,7 +22,6 @@ service OnboardingService {
   // NEW: Paso D — Activación (orquesta Accounts + Ledger)
   rpc ActivateRegistration(ActivateRegistrationRequest) returns (ActivateRegistrationResponse);
 }
-
 
 service OidcAuthService {
   // Start OIDC login (BFF)
@@ -41,7 +40,6 @@ service PrincipalService {
   // Resolver atributos del principal a partir del token del caller (microservice)
   rpc ResolvePrincipal(ResolvePrincipalRequest) returns (ResolvePrincipalResponse);
 }
-
 
 // =========================================================
 // Enums
@@ -83,13 +81,13 @@ enum RegistrationState {
 
 message ActivateRegistrationRequest {
   string registration_id = 1; // uuid
-  string channel = 2;         // web|mobile|etc
+  string channel = 2; // web|mobile|etc
 
   // datos mínimos para CreateCustomer en accounts
   string full_name = 3;
   string tin = 4;
-  string birth_date = 5;      // YYYY-MM-DD
-  string country = 6;         // ISO-3166-1 alpha-2 (tu OpenAPI manda solo country)
+  string birth_date = 5; // YYYY-MM-DD
+  string country = 6; // ISO-3166-1 alpha-2 (tu OpenAPI manda solo country)
   string email = 7;
   string phone = 8;
 
@@ -110,7 +108,7 @@ message ActivateRegistrationResponse {
   // para tu OpenAPI ActivateResponse
   string customer_id = 3;
   string primary_account_id = 4; // checking
-  string activation_ref = 5;     // estable e idempotente
+  string activation_ref = 5; // estable e idempotente
 
   // opcional (útil para debug/demo)
   repeated ActivatedAccount accounts = 6;
@@ -132,15 +130,15 @@ message StartRegistrationRequest {
   string national_id_issue_date = 3; // YYYY-MM-DD
   string fingerprint_code = 4;
 
-  double monthly_income = 5;
+  string monthly_income = 5;
   OccupationType occupation_type = 6;
 
   string email = 7; // format: email
   string phone = 8;
 
   // Optional client hints for upload constraints (server enforces)
-  string id_front_content_type = 9;   // e.g. image/jpeg, application/pdf
-  string selfie_content_type = 10;    // e.g. image/jpeg, image/png
+  string id_front_content_type = 9; // e.g. image/jpeg, application/pdf
+  string selfie_content_type = 10; // e.g. image/jpeg, image/png
 }
 
 // StartRegistrationV1Response
@@ -233,7 +231,7 @@ message KycObjectStatus {
 // =========================================================
 
 message StartOidcLoginRequest {
-  string channel = 1;              // example: web
+  string channel = 1; // example: web
   string redirect_after_login = 2; // example: /app
 }
 
@@ -245,19 +243,19 @@ message StartOidcLoginResponse {
 message CompleteOidcLoginRequest {
   string code = 1;
   string state = 2;
-  string ip = 3;         // prefer: pass hashed via context; kept for now if you already use it
+  string ip = 3; // prefer: pass hashed via context; kept for now if you already use it
   string user_agent = 4; // prefer: hashed via context; kept for now if you already use it
-  string channel = 5;    // example: web
+  string channel = 5; // example: web
 }
 
 message CompleteOidcLoginResponse {
-  string identity_id = 1;     // uuid
+  string identity_id = 1; // uuid
   string subject_id_oidc = 2;
-  string provider = 3;        // example: cognito
+  string provider = 3; // example: cognito
   OidcUser user = 4;
 
-  string session_id = 5;          // uuid
-  int64 session_expires_in = 6;   // seconds
+  string session_id = 5; // uuid
+  int64 session_expires_in = 6; // seconds
   string redirect_after_login = 7;
 }
 
@@ -274,7 +272,7 @@ message RefreshSessionRequest {
 }
 
 message RefreshSessionResponse {
-  string session_id = 1;        // uuid (rotated)
+  string session_id = 1; // uuid (rotated)
   int64 session_expires_in = 2; // seconds
 
   // Returned to BFF to call downstream micros.
@@ -297,17 +295,16 @@ message GetSessionInfoRequest {
 }
 
 message GetSessionInfoResponse {
-  string identity_id = 1;      // uuid
+  string identity_id = 1; // uuid
   string subject_id_oidc = 2;
-  string provider = 3;         // example: cognito
-  OidcUser user = 4;           // roles here
-  string customer_id = 5;      // optional if linked
-  string user_status = 6;      // ACTIVE|LOCKED|DISABLED
+  string provider = 3; // example: cognito
+  OidcUser user = 4; // roles here
+  string customer_id = 5; // optional if linked
+  string user_status = 6; // ACTIVE|LOCKED|DISABLED
   int64 session_expires_in = 7;
   string access_token = 8;
   int64 access_token_expires_in = 9;
 }
-
 
 message ResolvePrincipalRequest {
   // Si true, identity ignora customer_id vacío y devuelve NOT_FOUND
@@ -318,9 +315,9 @@ message ResolvePrincipalRequest {
 }
 
 message ResolvePrincipalResponse {
-  string subject_id_oidc = 1;      // sub
-  string principal_id = 2;         // "poolId|sub"
-  string customer_id = 3;          // uuid string (si existe link)
-  repeated string roles = 4;       // cognito:groups o roles internas
-  string user_status = 5;          // ACTIVE|LOCKED|DISABLED (si lo tienes)
+  string subject_id_oidc = 1; // sub
+  string principal_id = 2; // "poolId|sub"
+  string customer_id = 3; // uuid string (si existe link)
+  repeated string roles = 4; // cognito:groups o roles internas
+  string user_status = 5; // ACTIVE|LOCKED|DISABLED (si lo tienes)
 }

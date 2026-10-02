@@ -2,11 +2,9 @@ syntax = "proto3";
 
 package bank.ledgerpayments.v1;
 
-option go_package = "github.com/imaginarybank/banking-contracts/gen/go/bank/ledgerpayments/v1;ledgerpaymentsv1";
-
-
 import "google/protobuf/timestamp.proto";
 
+option go_package = "github.com/tagoKoder/bank-contracts/gen/go/bank/ledgerpayments/v1;ledgerpaymentsv1";
 
 service PaymentsService {
   rpc PostPayment(PostPaymentRequest) returns (PostPaymentResponse);
@@ -22,16 +20,16 @@ service LedgerService {
 
 message PostPaymentRequest {
   string idempotency_key = 1;
-  string source_account_id = 2;      // UUID
+  string source_account_id = 2; // UUID
   string destination_account_id = 3; // UUID (destination_kind=internal)
-  string currency = 4;               // "USD"
-  string amount = 5;                 // decimal como string para evitar float (20,6)
-  string initiated_by = 6;           // subject/actor
+  string currency = 4; // "USD"
+  string amount = 5; // decimal como string para evitar float (20,6)
+  string initiated_by = 6; // subject/actor
 }
 
 message PostPaymentResponse {
-  string payment_id = 1;             // UUID
-  string status = 2;                 // posted|processing|failed
+  string payment_id = 1; // UUID
+  string status = 2; // posted|processing|failed
 }
 
 message GetPaymentRequest {
@@ -58,18 +56,18 @@ message GetPaymentResponse {
 
 message CreditAccountRequest {
   string idempotency_key = 1;
-  string account_id = 2;  // UUID
+  string account_id = 2; // UUID
   string currency = 3;
-  string amount = 4;      // decimal string
+  string amount = 4; // decimal string
   string initiated_by = 5;
   string external_ref = 6; // opcional
-  string reason = 7;       // ej: "registration_bonus"
-  string customer_id = 8;  // contrapartida (no PII), ej: customerId
+  string reason = 7; // ej: "registration_bonus"
+  string customer_id = 8; // contrapartida (no PII), ej: customerId
 }
 
 message CreditAccountResponse {
-  string journal_id = 1;   // UUID
-  string status = 2;       // posted
+  string journal_id = 1; // UUID
+  string status = 2; // posted
 }
 
 message ListAccountJournalEntriesRequest {
@@ -83,8 +81,8 @@ message ListAccountJournalEntriesRequest {
 message JournalLine {
   string gl_account_code = 1;
   string counterparty_ref = 2;
-  string debit = 3;   // decimal string
-  string credit = 4;  // decimal string
+  string debit = 3; // decimal string
+  string credit = 4; // decimal string
 }
 
 message JournalEntryView {
@@ -102,12 +100,11 @@ message ListAccountJournalEntriesResponse {
   int32 size = 3;
 }
 
-
 message ListAccountStatementRequest {
   string account_id = 1;
   google.protobuf.Timestamp from = 2;
   google.protobuf.Timestamp to = 3;
-  int32 page = 4;  // 1-based
+  int32 page = 4; // 1-based
   int32 size = 5;
   bool include_counterparty = 6; // si true, ledger enriquece con micro/account
 }
@@ -115,8 +112,8 @@ message ListAccountStatementRequest {
 message CounterpartyView {
   string account_id = 1;
   string account_number = 2;
-  string display_name = 3;   // nombre del titular (demo)
-  string account_type = 4;   // savings|checking|...
+  string display_name = 3; // nombre del titular (demo)
+  string account_type = 4; // savings|checking|...
 }
 
 message StatementItem {
@@ -125,13 +122,13 @@ message StatementItem {
   string currency = 3;
 
   string direction = 4; // debit|credit
-  string amount = 5;    // decimal string
+  string amount = 5; // decimal string
 
-  string kind = 6;      // transfer|bonus|other
-  string memo = 7;      // external_ref
+  string kind = 6; // transfer|bonus|other
+  string memo = 7; // external_ref
 
   string counterparty_account_id = 8; // vacío si "system"
-  CounterpartyView counterparty = 9;  // presente si include_counterparty=true
+  CounterpartyView counterparty = 9; // presente si include_counterparty=true
 }
 
 message ListAccountStatementResponse {
