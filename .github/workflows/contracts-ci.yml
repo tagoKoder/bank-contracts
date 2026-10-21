@@ -77,3 +77,21 @@ jobs:
 
       - name: Compile generated Go contracts
         run: go test ./gen/go/...
+    
+  validate-java:
+    name: Validate Java contracts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build Java contracts
+        run: mvn --batch-mode clean verify
