@@ -159,6 +159,7 @@ var PaymentsService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	LedgerService_CreditAccountSystem_FullMethodName       = "/bank.ledgerpayments.v1.LedgerService/CreditAccountSystem"
 	LedgerService_CreditAccount_FullMethodName             = "/bank.ledgerpayments.v1.LedgerService/CreditAccount"
 	LedgerService_ListAccountJournalEntries_FullMethodName = "/bank.ledgerpayments.v1.LedgerService/ListAccountJournalEntries"
 	LedgerService_ListAccountStatement_FullMethodName      = "/bank.ledgerpayments.v1.LedgerService/ListAccountStatement"
@@ -168,6 +169,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LedgerServiceClient interface {
+	// Solo operación interna de crédito promocional, con autorización de servicio.
+	CreditAccountSystem(ctx context.Context, in *CreditAccountSystemRequest, opts ...grpc.CallOption) (*CreditAccountSystemResponse, error)
 	CreditAccount(ctx context.Context, in *CreditAccountRequest, opts ...grpc.CallOption) (*CreditAccountResponse, error)
 	ListAccountJournalEntries(ctx context.Context, in *ListAccountJournalEntriesRequest, opts ...grpc.CallOption) (*ListAccountJournalEntriesResponse, error)
 	// NUEVO: Estado de cuenta / Movimientos
@@ -180,6 +183,16 @@ type ledgerServiceClient struct {
 
 func NewLedgerServiceClient(cc grpc.ClientConnInterface) LedgerServiceClient {
 	return &ledgerServiceClient{cc}
+}
+
+func (c *ledgerServiceClient) CreditAccountSystem(ctx context.Context, in *CreditAccountSystemRequest, opts ...grpc.CallOption) (*CreditAccountSystemResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreditAccountSystemResponse)
+	err := c.cc.Invoke(ctx, LedgerService_CreditAccountSystem_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *ledgerServiceClient) CreditAccount(ctx context.Context, in *CreditAccountRequest, opts ...grpc.CallOption) (*CreditAccountResponse, error) {
@@ -216,6 +229,8 @@ func (c *ledgerServiceClient) ListAccountStatement(ctx context.Context, in *List
 // All implementations must embed UnimplementedLedgerServiceServer
 // for forward compatibility.
 type LedgerServiceServer interface {
+	// Solo operación interna de crédito promocional, con autorización de servicio.
+	CreditAccountSystem(context.Context, *CreditAccountSystemRequest) (*CreditAccountSystemResponse, error)
 	CreditAccount(context.Context, *CreditAccountRequest) (*CreditAccountResponse, error)
 	ListAccountJournalEntries(context.Context, *ListAccountJournalEntriesRequest) (*ListAccountJournalEntriesResponse, error)
 	// NUEVO: Estado de cuenta / Movimientos
@@ -230,6 +245,9 @@ type LedgerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedLedgerServiceServer struct{}
 
+func (UnimplementedLedgerServiceServer) CreditAccountSystem(context.Context, *CreditAccountSystemRequest) (*CreditAccountSystemResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreditAccountSystem not implemented")
+}
 func (UnimplementedLedgerServiceServer) CreditAccount(context.Context, *CreditAccountRequest) (*CreditAccountResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreditAccount not implemented")
 }
@@ -258,6 +276,24 @@ func RegisterLedgerServiceServer(s grpc.ServiceRegistrar, srv LedgerServiceServe
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&LedgerService_ServiceDesc, srv)
+}
+
+func _LedgerService_CreditAccountSystem_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreditAccountSystemRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LedgerServiceServer).CreditAccountSystem(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: LedgerService_CreditAccountSystem_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LedgerServiceServer).CreditAccountSystem(ctx, req.(*CreditAccountSystemRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _LedgerService_CreditAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -321,6 +357,10 @@ var LedgerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "bank.ledgerpayments.v1.LedgerService",
 	HandlerType: (*LedgerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreditAccountSystem",
+			Handler:    _LedgerService_CreditAccountSystem_Handler,
+		},
 		{
 			MethodName: "CreditAccount",
 			Handler:    _LedgerService_CreditAccount_Handler,

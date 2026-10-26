@@ -1130,6 +1130,143 @@ func (x *ListAccountStatementResponse) GetSize() int32 {
 	return 0
 }
 
+// El importe es una cadena decimal (nunca double).
+type CreditAccountSystemRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	IdempotencyKey string                 `protobuf:"bytes,1,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	AccountId      string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Currency       string                 `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
+	Amount         string                 `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	ExternalRef    string                 `protobuf:"bytes,5,opt,name=external_ref,json=externalRef,proto3" json:"external_ref,omitempty"`
+	Reason         string                 `protobuf:"bytes,6,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CreditAccountSystemRequest) Reset() {
+	*x = CreditAccountSystemRequest{}
+	mi := &file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreditAccountSystemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreditAccountSystemRequest) ProtoMessage() {}
+
+func (x *CreditAccountSystemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreditAccountSystemRequest.ProtoReflect.Descriptor instead.
+func (*CreditAccountSystemRequest) Descriptor() ([]byte, []int) {
+	return file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CreditAccountSystemRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemRequest) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemRequest) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemRequest) GetExternalRef() string {
+	if x != nil {
+		return x.ExternalRef
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type CreditAccountSystemResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	JournalId     string                 `protobuf:"bytes,1,opt,name=journal_id,json=journalId,proto3" json:"journal_id,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreditAccountSystemResponse) Reset() {
+	*x = CreditAccountSystemResponse{}
+	mi := &file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreditAccountSystemResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreditAccountSystemResponse) ProtoMessage() {}
+
+func (x *CreditAccountSystemResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreditAccountSystemResponse.ProtoReflect.Descriptor instead.
+func (*CreditAccountSystemResponse) Descriptor() ([]byte, []int) {
+	return file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CreditAccountSystemResponse) GetJournalId() string {
+	if x != nil {
+		return x.JournalId
+	}
+	return ""
+}
+
+func (x *CreditAccountSystemResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_bank_ledgerpayments_v1_ledgerpayments_proto protoreflect.FileDescriptor
 
 const file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDesc = "" +
@@ -1232,12 +1369,25 @@ const file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDesc = "" +
 	"\x1cListAccountStatementResponse\x12;\n" +
 	"\x05items\x18\x01 \x03(\v2%.bank.ledgerpayments.v1.StatementItemR\x05items\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x12\n" +
-	"\x04size\x18\x03 \x01(\x05R\x04size2\xde\x01\n" +
+	"\x04size\x18\x03 \x01(\x05R\x04size\"\xd3\x01\n" +
+	"\x1aCreditAccountSystemRequest\x12'\n" +
+	"\x0fidempotency_key\x18\x01 \x01(\tR\x0eidempotencyKey\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\x12\x1a\n" +
+	"\bcurrency\x18\x03 \x01(\tR\bcurrency\x12\x16\n" +
+	"\x06amount\x18\x04 \x01(\tR\x06amount\x12!\n" +
+	"\fexternal_ref\x18\x05 \x01(\tR\vexternalRef\x12\x16\n" +
+	"\x06reason\x18\x06 \x01(\tR\x06reason\"T\n" +
+	"\x1bCreditAccountSystemResponse\x12\x1d\n" +
+	"\n" +
+	"journal_id\x18\x01 \x01(\tR\tjournalId\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status2\xde\x01\n" +
 	"\x0fPaymentsService\x12f\n" +
 	"\vPostPayment\x12*.bank.ledgerpayments.v1.PostPaymentRequest\x1a+.bank.ledgerpayments.v1.PostPaymentResponse\x12c\n" +
 	"\n" +
-	"GetPayment\x12).bank.ledgerpayments.v1.GetPaymentRequest\x1a*.bank.ledgerpayments.v1.GetPaymentResponse2\x94\x03\n" +
-	"\rLedgerService\x12l\n" +
+	"GetPayment\x12).bank.ledgerpayments.v1.GetPaymentRequest\x1a*.bank.ledgerpayments.v1.GetPaymentResponse2\x94\x04\n" +
+	"\rLedgerService\x12~\n" +
+	"\x13CreditAccountSystem\x122.bank.ledgerpayments.v1.CreditAccountSystemRequest\x1a3.bank.ledgerpayments.v1.CreditAccountSystemResponse\x12l\n" +
 	"\rCreditAccount\x12,.bank.ledgerpayments.v1.CreditAccountRequest\x1a-.bank.ledgerpayments.v1.CreditAccountResponse\x12\x90\x01\n" +
 	"\x19ListAccountJournalEntries\x128.bank.ledgerpayments.v1.ListAccountJournalEntriesRequest\x1a9.bank.ledgerpayments.v1.ListAccountJournalEntriesResponse\x12\x81\x01\n" +
 	"\x14ListAccountStatement\x123.bank.ledgerpayments.v1.ListAccountStatementRequest\x1a4.bank.ledgerpayments.v1.ListAccountStatementResponseBTZRgithub.com/tagoKoder/bank-contracts/gen/go/bank/ledgerpayments/v1;ledgerpaymentsv1b\x06proto3"
@@ -1254,7 +1404,7 @@ func file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDescGZIP() []byte {
 	return file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDescData
 }
 
-var file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_bank_ledgerpayments_v1_ledgerpayments_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_bank_ledgerpayments_v1_ledgerpayments_proto_goTypes = []any{
 	(*PostPaymentRequest)(nil),                // 0: bank.ledgerpayments.v1.PostPaymentRequest
 	(*PostPaymentResponse)(nil),               // 1: bank.ledgerpayments.v1.PostPaymentResponse
@@ -1271,34 +1421,38 @@ var file_bank_ledgerpayments_v1_ledgerpayments_proto_goTypes = []any{
 	(*CounterpartyView)(nil),                  // 12: bank.ledgerpayments.v1.CounterpartyView
 	(*StatementItem)(nil),                     // 13: bank.ledgerpayments.v1.StatementItem
 	(*ListAccountStatementResponse)(nil),      // 14: bank.ledgerpayments.v1.ListAccountStatementResponse
-	(*timestamppb.Timestamp)(nil),             // 15: google.protobuf.Timestamp
+	(*CreditAccountSystemRequest)(nil),        // 15: bank.ledgerpayments.v1.CreditAccountSystemRequest
+	(*CreditAccountSystemResponse)(nil),       // 16: bank.ledgerpayments.v1.CreditAccountSystemResponse
+	(*timestamppb.Timestamp)(nil),             // 17: google.protobuf.Timestamp
 }
 var file_bank_ledgerpayments_v1_ledgerpayments_proto_depIdxs = []int32{
-	15, // 0: bank.ledgerpayments.v1.PaymentStep.attempted_at:type_name -> google.protobuf.Timestamp
+	17, // 0: bank.ledgerpayments.v1.PaymentStep.attempted_at:type_name -> google.protobuf.Timestamp
 	3,  // 1: bank.ledgerpayments.v1.GetPaymentResponse.steps:type_name -> bank.ledgerpayments.v1.PaymentStep
-	15, // 2: bank.ledgerpayments.v1.GetPaymentResponse.created_at:type_name -> google.protobuf.Timestamp
-	15, // 3: bank.ledgerpayments.v1.ListAccountJournalEntriesRequest.from:type_name -> google.protobuf.Timestamp
-	15, // 4: bank.ledgerpayments.v1.ListAccountJournalEntriesRequest.to:type_name -> google.protobuf.Timestamp
-	15, // 5: bank.ledgerpayments.v1.JournalEntryView.booked_at:type_name -> google.protobuf.Timestamp
+	17, // 2: bank.ledgerpayments.v1.GetPaymentResponse.created_at:type_name -> google.protobuf.Timestamp
+	17, // 3: bank.ledgerpayments.v1.ListAccountJournalEntriesRequest.from:type_name -> google.protobuf.Timestamp
+	17, // 4: bank.ledgerpayments.v1.ListAccountJournalEntriesRequest.to:type_name -> google.protobuf.Timestamp
+	17, // 5: bank.ledgerpayments.v1.JournalEntryView.booked_at:type_name -> google.protobuf.Timestamp
 	8,  // 6: bank.ledgerpayments.v1.JournalEntryView.lines:type_name -> bank.ledgerpayments.v1.JournalLine
 	9,  // 7: bank.ledgerpayments.v1.ListAccountJournalEntriesResponse.entries:type_name -> bank.ledgerpayments.v1.JournalEntryView
-	15, // 8: bank.ledgerpayments.v1.ListAccountStatementRequest.from:type_name -> google.protobuf.Timestamp
-	15, // 9: bank.ledgerpayments.v1.ListAccountStatementRequest.to:type_name -> google.protobuf.Timestamp
-	15, // 10: bank.ledgerpayments.v1.StatementItem.booked_at:type_name -> google.protobuf.Timestamp
+	17, // 8: bank.ledgerpayments.v1.ListAccountStatementRequest.from:type_name -> google.protobuf.Timestamp
+	17, // 9: bank.ledgerpayments.v1.ListAccountStatementRequest.to:type_name -> google.protobuf.Timestamp
+	17, // 10: bank.ledgerpayments.v1.StatementItem.booked_at:type_name -> google.protobuf.Timestamp
 	12, // 11: bank.ledgerpayments.v1.StatementItem.counterparty:type_name -> bank.ledgerpayments.v1.CounterpartyView
 	13, // 12: bank.ledgerpayments.v1.ListAccountStatementResponse.items:type_name -> bank.ledgerpayments.v1.StatementItem
 	0,  // 13: bank.ledgerpayments.v1.PaymentsService.PostPayment:input_type -> bank.ledgerpayments.v1.PostPaymentRequest
 	2,  // 14: bank.ledgerpayments.v1.PaymentsService.GetPayment:input_type -> bank.ledgerpayments.v1.GetPaymentRequest
-	5,  // 15: bank.ledgerpayments.v1.LedgerService.CreditAccount:input_type -> bank.ledgerpayments.v1.CreditAccountRequest
-	7,  // 16: bank.ledgerpayments.v1.LedgerService.ListAccountJournalEntries:input_type -> bank.ledgerpayments.v1.ListAccountJournalEntriesRequest
-	11, // 17: bank.ledgerpayments.v1.LedgerService.ListAccountStatement:input_type -> bank.ledgerpayments.v1.ListAccountStatementRequest
-	1,  // 18: bank.ledgerpayments.v1.PaymentsService.PostPayment:output_type -> bank.ledgerpayments.v1.PostPaymentResponse
-	4,  // 19: bank.ledgerpayments.v1.PaymentsService.GetPayment:output_type -> bank.ledgerpayments.v1.GetPaymentResponse
-	6,  // 20: bank.ledgerpayments.v1.LedgerService.CreditAccount:output_type -> bank.ledgerpayments.v1.CreditAccountResponse
-	10, // 21: bank.ledgerpayments.v1.LedgerService.ListAccountJournalEntries:output_type -> bank.ledgerpayments.v1.ListAccountJournalEntriesResponse
-	14, // 22: bank.ledgerpayments.v1.LedgerService.ListAccountStatement:output_type -> bank.ledgerpayments.v1.ListAccountStatementResponse
-	18, // [18:23] is the sub-list for method output_type
-	13, // [13:18] is the sub-list for method input_type
+	15, // 15: bank.ledgerpayments.v1.LedgerService.CreditAccountSystem:input_type -> bank.ledgerpayments.v1.CreditAccountSystemRequest
+	5,  // 16: bank.ledgerpayments.v1.LedgerService.CreditAccount:input_type -> bank.ledgerpayments.v1.CreditAccountRequest
+	7,  // 17: bank.ledgerpayments.v1.LedgerService.ListAccountJournalEntries:input_type -> bank.ledgerpayments.v1.ListAccountJournalEntriesRequest
+	11, // 18: bank.ledgerpayments.v1.LedgerService.ListAccountStatement:input_type -> bank.ledgerpayments.v1.ListAccountStatementRequest
+	1,  // 19: bank.ledgerpayments.v1.PaymentsService.PostPayment:output_type -> bank.ledgerpayments.v1.PostPaymentResponse
+	4,  // 20: bank.ledgerpayments.v1.PaymentsService.GetPayment:output_type -> bank.ledgerpayments.v1.GetPaymentResponse
+	16, // 21: bank.ledgerpayments.v1.LedgerService.CreditAccountSystem:output_type -> bank.ledgerpayments.v1.CreditAccountSystemResponse
+	6,  // 22: bank.ledgerpayments.v1.LedgerService.CreditAccount:output_type -> bank.ledgerpayments.v1.CreditAccountResponse
+	10, // 23: bank.ledgerpayments.v1.LedgerService.ListAccountJournalEntries:output_type -> bank.ledgerpayments.v1.ListAccountJournalEntriesResponse
+	14, // 24: bank.ledgerpayments.v1.LedgerService.ListAccountStatement:output_type -> bank.ledgerpayments.v1.ListAccountStatementResponse
+	19, // [19:25] is the sub-list for method output_type
+	13, // [13:19] is the sub-list for method input_type
 	13, // [13:13] is the sub-list for extension type_name
 	13, // [13:13] is the sub-list for extension extendee
 	0,  // [0:13] is the sub-list for field type_name
@@ -1315,7 +1469,7 @@ func file_bank_ledgerpayments_v1_ledgerpayments_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDesc), len(file_bank_ledgerpayments_v1_ledgerpayments_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

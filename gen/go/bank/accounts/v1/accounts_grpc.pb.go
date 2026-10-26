@@ -425,10 +425,11 @@ var AccountsService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	InternalAccountsService_ValidateAccountsAndLimits_FullMethodName = "/bank.accounts.v1.InternalAccountsService/ValidateAccountsAndLimits"
-	InternalAccountsService_ReserveHold_FullMethodName               = "/bank.accounts.v1.InternalAccountsService/ReserveHold"
-	InternalAccountsService_ReleaseHold_FullMethodName               = "/bank.accounts.v1.InternalAccountsService/ReleaseHold"
-	InternalAccountsService_BatchGetAccountSummaries_FullMethodName  = "/bank.accounts.v1.InternalAccountsService/BatchGetAccountSummaries"
+	InternalAccountsService_OpenAccountWithOpeningBonus_FullMethodName = "/bank.accounts.v1.InternalAccountsService/OpenAccountWithOpeningBonus"
+	InternalAccountsService_ValidateAccountsAndLimits_FullMethodName   = "/bank.accounts.v1.InternalAccountsService/ValidateAccountsAndLimits"
+	InternalAccountsService_ReserveHold_FullMethodName                 = "/bank.accounts.v1.InternalAccountsService/ReserveHold"
+	InternalAccountsService_ReleaseHold_FullMethodName                 = "/bank.accounts.v1.InternalAccountsService/ReleaseHold"
+	InternalAccountsService_BatchGetAccountSummaries_FullMethodName    = "/bank.accounts.v1.InternalAccountsService/BatchGetAccountSummaries"
 )
 
 // InternalAccountsServiceClient is the client API for InternalAccountsService service.
@@ -437,6 +438,8 @@ const (
 //
 // INTERNAL (para ledger/payments) - proteger con mTLS/API key
 type InternalAccountsServiceClient interface {
+	// Solo servicio Identity autenticado; no exponer a clientes.
+	OpenAccountWithOpeningBonus(ctx context.Context, in *OpenAccountWithOpeningBonusRequest, opts ...grpc.CallOption) (*OpenAccountWithOpeningBonusResponse, error)
 	// POST /internal/accounts/validate
 	ValidateAccountsAndLimits(ctx context.Context, in *ValidateAccountsAndLimitsRequest, opts ...grpc.CallOption) (*ValidateAccountsAndLimitsResponse, error)
 	// POST /internal/accounts/{id}/hold/reserve
@@ -452,6 +455,16 @@ type internalAccountsServiceClient struct {
 
 func NewInternalAccountsServiceClient(cc grpc.ClientConnInterface) InternalAccountsServiceClient {
 	return &internalAccountsServiceClient{cc}
+}
+
+func (c *internalAccountsServiceClient) OpenAccountWithOpeningBonus(ctx context.Context, in *OpenAccountWithOpeningBonusRequest, opts ...grpc.CallOption) (*OpenAccountWithOpeningBonusResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(OpenAccountWithOpeningBonusResponse)
+	err := c.cc.Invoke(ctx, InternalAccountsService_OpenAccountWithOpeningBonus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *internalAccountsServiceClient) ValidateAccountsAndLimits(ctx context.Context, in *ValidateAccountsAndLimitsRequest, opts ...grpc.CallOption) (*ValidateAccountsAndLimitsResponse, error) {
@@ -500,6 +513,8 @@ func (c *internalAccountsServiceClient) BatchGetAccountSummaries(ctx context.Con
 //
 // INTERNAL (para ledger/payments) - proteger con mTLS/API key
 type InternalAccountsServiceServer interface {
+	// Solo servicio Identity autenticado; no exponer a clientes.
+	OpenAccountWithOpeningBonus(context.Context, *OpenAccountWithOpeningBonusRequest) (*OpenAccountWithOpeningBonusResponse, error)
 	// POST /internal/accounts/validate
 	ValidateAccountsAndLimits(context.Context, *ValidateAccountsAndLimitsRequest) (*ValidateAccountsAndLimitsResponse, error)
 	// POST /internal/accounts/{id}/hold/reserve
@@ -517,6 +532,9 @@ type InternalAccountsServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedInternalAccountsServiceServer struct{}
 
+func (UnimplementedInternalAccountsServiceServer) OpenAccountWithOpeningBonus(context.Context, *OpenAccountWithOpeningBonusRequest) (*OpenAccountWithOpeningBonusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method OpenAccountWithOpeningBonus not implemented")
+}
 func (UnimplementedInternalAccountsServiceServer) ValidateAccountsAndLimits(context.Context, *ValidateAccountsAndLimitsRequest) (*ValidateAccountsAndLimitsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ValidateAccountsAndLimits not implemented")
 }
@@ -549,6 +567,24 @@ func RegisterInternalAccountsServiceServer(s grpc.ServiceRegistrar, srv Internal
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&InternalAccountsService_ServiceDesc, srv)
+}
+
+func _InternalAccountsService_OpenAccountWithOpeningBonus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OpenAccountWithOpeningBonusRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalAccountsServiceServer).OpenAccountWithOpeningBonus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InternalAccountsService_OpenAccountWithOpeningBonus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalAccountsServiceServer).OpenAccountWithOpeningBonus(ctx, req.(*OpenAccountWithOpeningBonusRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _InternalAccountsService_ValidateAccountsAndLimits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -630,6 +666,10 @@ var InternalAccountsService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "bank.accounts.v1.InternalAccountsService",
 	HandlerType: (*InternalAccountsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "OpenAccountWithOpeningBonus",
+			Handler:    _InternalAccountsService_OpenAccountWithOpeningBonus_Handler,
+		},
 		{
 			MethodName: "ValidateAccountsAndLimits",
 			Handler:    _InternalAccountsService_ValidateAccountsAndLimits_Handler,
