@@ -43,6 +43,8 @@ service AccountsService {
 
 // INTERNAL (para ledger/payments) - proteger con mTLS/API key
 service InternalAccountsService {
+  // Solo servicio Identity autenticado; no exponer a clientes.
+  rpc OpenAccountWithOpeningBonus(OpenAccountWithOpeningBonusRequest) returns (OpenAccountWithOpeningBonusResponse);
   // POST /internal/accounts/validate
   rpc ValidateAccountsAndLimits(ValidateAccountsAndLimitsRequest) returns (ValidateAccountsAndLimitsResponse);
 
@@ -333,4 +335,21 @@ message AccountLookup {
 
 message GetAccountByNumberResponse {
   AccountLookup account = 1;
+}
+
+// Apertura inicial invocada solamente desde Onboarding.
+message OpenAccountWithOpeningBonusRequest {
+  string customer_id = 1;
+  ProductType product_type = 2;
+  string currency = 3;
+  string idempotency_key = 4;
+  string external_ref = 5;
+  string initiated_by = 6;
+}
+
+message OpenAccountWithOpeningBonusResponse {
+  string account_id = 1;
+  string account_number = 2;
+  string bonus_journal_id = 3;
+  string status = 4;
 }

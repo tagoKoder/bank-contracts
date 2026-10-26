@@ -1,3 +1,4 @@
+
 syntax = "proto3";
 
 package bank.ledgerpayments.v1;
@@ -12,6 +13,8 @@ service PaymentsService {
 }
 
 service LedgerService {
+  // Solo operación interna de crédito promocional, con autorización de servicio.
+  rpc CreditAccountSystem(CreditAccountSystemRequest) returns (CreditAccountSystemResponse);
   rpc CreditAccount(CreditAccountRequest) returns (CreditAccountResponse);
   rpc ListAccountJournalEntries(ListAccountJournalEntriesRequest) returns (ListAccountJournalEntriesResponse);
   // NUEVO: Estado de cuenta / Movimientos
@@ -135,4 +138,20 @@ message ListAccountStatementResponse {
   repeated StatementItem items = 1;
   int32 page = 2;
   int32 size = 3;
+}
+
+
+// El importe es una cadena decimal (nunca double).
+message CreditAccountSystemRequest {
+  string idempotency_key = 1;
+  string account_id = 2;
+  string currency = 3;
+  string amount = 4;
+  string external_ref = 5;
+  string reason = 6;
+}
+
+message CreditAccountSystemResponse {
+  string journal_id = 1;
+  string status = 2;
 }
