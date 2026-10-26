@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 
 package bank.ledgerpayments.v1;
@@ -139,7 +138,6 @@ message ListAccountStatementResponse {
   int32 page = 2;
   int32 size = 3;
 }
-
 
 // El importe es una cadena decimal (nunca double).
 message CreditAccountSystemRequest {
