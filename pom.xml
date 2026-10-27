@@ -10,7 +10,7 @@
 
     <groupId>com.tagokoder</groupId>
     <artifactId>bank-contracts-java</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <packaging>jar</packaging>
 
     <name>Imaginary Bank gRPC Contracts</name>
